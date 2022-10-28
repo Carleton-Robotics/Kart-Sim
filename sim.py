@@ -27,16 +27,20 @@ class Controller:
 
 
 class Obj:
-    def __init__(self, pos, width, height, mass):
+    def __init__(self, pos, width, height, mass, win):
         self.pos = pos
         self.width = width
         self.height = height
         self.mass = mass
         self.vel = vector.obj(x=0, y=0)
         self.acc = vector.obj(x=0, y=0)
+        self.rect = Rectangle(Point(self.pos.x * 25 + SCREEN_WIDTH / 2, self.pos.y * 25 + SCREEN_HEIGHT / 2),
+                              Point(self.pos.x * 25 + self.width * 25 + SCREEN_WIDTH / 2,
+                                    self.pos.y * 25 + self.height * 25 + SCREEN_HEIGHT / 2)).draw(win)
 
     def step(self, delta):
         self.pos += self.vel * delta
+        self.rect.move(self.vel.x, self.vel.y)
         self.vel += self.acc * delta
         # self.acc /= DRAG
 
@@ -45,11 +49,11 @@ class Obj:
 
 
 class Kart(Obj):
-    def __init__(self, pos, heading):
-        super().__init__(pos, KART_WIDTH_M, KART_HEIGHT_M, KART_MASS_KG)
+    def __init__(self, pos, heading, win):
+        super().__init__(pos, KART_WIDTH_M, KART_HEIGHT_M, KART_MASS_KG, win)
         self.heading_ctrl = Controller(WHEEL_TURN_RATE_DEGREES_PER_SEC)
         self.speed_ctrl = Controller(0.5)
-        self.wheel_heading = 0
+        self.wheel_heading = heading
 
     def target_speed(self, speed):
         self.speed_ctrl.goal = speed
@@ -68,18 +72,13 @@ class Kart(Obj):
         super().draw(win)
         # todo make the x and y considered between the mid two wheels
 
-        Rectangle(Point(self.pos.x * 25 + SCREEN_WIDTH / 2, self.pos.y * 25 + SCREEN_HEIGHT / 2),
-                  Point(self.pos.x * 25 + self.width * 25 + SCREEN_WIDTH / 2,
-                        self.pos.y * 25 + self.height * 25 + SCREEN_HEIGHT / 2)).draw(win)
-
 
 def main():
-    # run the sim
-    kart = Kart(vector.obj(x=0, y=0), 0)
+    win = GraphWin("My Circle", SCREEN_WIDTH, SCREEN_HEIGHT, autoflush=True)
+    kart = Kart(vector.obj(x=0, y=0), 0, win)
     kart.target_speed(1)
     kart.target_wheel_heading(10)
     objects = [kart]
-    win = GraphWin("My Circle", SCREEN_WIDTH, SCREEN_HEIGHT, autoflush=True)
 
     running = True
     last_step = time.time()
